@@ -3,8 +3,14 @@
 import { Command } from 'commander';
 import prompt from 'prompt';
 import {execa} from 'execa';
+import {access, constants } from 'node:fs';
+import { chdir, cwd } from 'node:process';
 
-const { $ } = execa;
+
+import path from 'path';
+import fs from 'fs';
+
+
 
 const program = new Command();
 
@@ -50,13 +56,53 @@ async function setupGitHubRepo(repo_url) {
   const repo_name = repo_url.match(/movableink-clients\/([^/]+)\/.*/)?.[1];
   const app_name = repo_url.match(/.*\/apps\/([^/]+)$/)?.[1];
 
-  const executeCommand = async (command, args) => {
-    const { stdout, stderr } = await execa(command, args);
-    if (stderr) {
-      throw new Error(stderr.stderr);
-    }
-    return stdout;
-  };
+  console.log('repo name', repo_name)
+  console.log('repo url', repo_url)
 
-  await executeCommand('git', ['checkout', 'master']);
+
+  const repoExists = checkRepository(repo_name);
+
+    if (repoExists) {
+        try {
+          chdir(`${repo_name}`);
+          console.log(`New directory: ${cwd()}`);
+        } catch (err) {
+          console.error(`chdir: ${err}`);
+        }
+    }
 }
+
+const checkRepository = async (folderName) => {
+    const directoryPath = path.join(process.cwd(), folderName);
+    
+    console.log('${__dirname}', path.resolve());
+
+    access(directoryPath, constants.F_OK, (err) => {
+        console.log(`${err ? `${folderName} does not exist cloning repo` : `Changing directory into ${directoryPath}`}`);
+
+        if (err) {
+            console.log('cloning repo #todo');
+        }
+      });
+
+
+    console.log('access', );
+}
+
+// const executeCommand = async (command, args) => {
+//     console.log('here in execute command');
+//     const { stdout, stderr } = await execa(command, args);
+//     if (stderr) {
+//       throw new Error(stderr.stderr);
+//     }
+//     return stdout;
+//   };
+
+
+/*
+
+example path:
+
+movableink-clients/test_repo/
+
+*/
